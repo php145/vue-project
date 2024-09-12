@@ -7,8 +7,8 @@ import zhCn from 'element-plus/es/locale/lang/zh-cn'
 
 const app = createApp(App)
 
-app.use(ElementPlus,{
+app.use(ElementPlus, {
     locale: zhCn,
-  })
+})
 app.use(router)
 app.mount('#app')
