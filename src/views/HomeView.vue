@@ -3,26 +3,25 @@
     <el-container>
       <el-header>养老金计算器</el-header>
       <el-main>
-        <el-form :model="form" label-width="100px" size = "mini"  >
-          <el-row type="flex">
-            <el-col :spen="12">
-              <el-form-item label="姓名">
-                <el-input v-model="form.name" />
-              </el-form-item>
-            </el-col>
-              <el-col :spen="12">
-              <el-form-item label="退休时间">
-                <div class="block">
+        <el-form :model="form" label-width="auto" size = "mini"  >
+          <el-row>
+              <el-col :span="12">
+                <el-form-item label="姓名" prop="customName">
+                  <el-input v-model="form.name"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="退休时间" prop="phoneNumb">
                   <el-date-picker
                     v-model="value1"
                     type="date"
                     placeholder="退休时间"
                     :size="size"
-                  />
-                </div>
-              </el-form-item>
-            </el-col>
-          </el-row>
+                    />
+                </el-form-item>
+              </el-col>
+            </el-row>
+            
         </el-form>
       </el-main>
     </el-container>
