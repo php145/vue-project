@@ -12,18 +12,15 @@
         >
           <router-link to="/Index">
             <el-menu-item index="/Index">
-              <el-icon><icon-menu /></el-icon>
               <span>首页</span>
             </el-menu-item>
           </router-link>
           <router-link to="/AverageSalary">
             <el-menu-item index="/AverageSalary">
-              <el-icon><document /></el-icon>
               <span>省岗平均工资管理</span>
             </el-menu-item>
           </router-link>
           <el-menu-item index="3">
-            <el-icon><setting /></el-icon>
             <span>Navigator Four</span>
           </el-menu-item>
         </el-menu>
@@ -37,8 +34,14 @@
     </el-container>
   </div>
 </template>
+
 <script>
-export default {};
+export default {
+  name: "HomeView",
+  setup() {
+    return {};
+  },
+};
 </script>
 
 <style scoped>
