@@ -176,9 +176,10 @@ export default {
           n = tableData[k - 1].month;
         }
         for (let i = 1; i <= tableData[k].month; i++, j++) {
+          //(i < 10 ? "0" : "")
           addData(db, "averageSalary", {
             id: j,
-            year: tableData[k].year,
+            year: tableData[k].year + "" + String(i + n).padStart(2, "0"),
             averageSalary: tableData[k].averageSalary,
             month: i + n,
           });

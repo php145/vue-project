@@ -1,7 +1,6 @@
 <script setup>
-let db;
 openDB("pension", "1").then((db) => {
-  db = db;
+  db.close();
 });
 </script>
 

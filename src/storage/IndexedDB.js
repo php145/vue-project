@@ -73,24 +73,20 @@ function addData(db, storeName, data) {
 }
 
 /**
- * 通过主键读取数据
+ * 通过游标读取数据
  * @param {object} db 数据库实例
  * @param {string} storeName 仓库名称
- * @param {string} key 主键值
  */
-function getDataByKey(db, storeName, key) {
-  return new Promise((resolve, reject) => {
-    var transaction = db.transaction([storeName]); // 事务
-    var objectStore = transaction.objectStore(storeName); // 仓库对象
-    var request = objectStore.get(key); // 通过主键获取数据
+function cursorGetData(db, storeName, callback) {
+  let list = [];
+  var store = db
+    .transaction(storeName, "readwrite") // 事务
+    .objectStore(storeName); // 仓库对象
+  var request = store.openCursor(); // 指针对象
+  // 游标开启成功，逐行读数据
+  request.onsuccess = function (e) {
+    var cursor = e.target.result;
+    callback(cursor);
 
-    request.onerror = function (event) {
-      console.log("事务失败");
-    };
-
-    request.onsuccess = function (event) {
-      console.log("主键查询结果: ", request.result);
-      resolve(request.result);
-    };
-  });
+  };
 }

@@ -31,7 +31,7 @@
         <el-form-item label="工作时间">
           <el-date-picker
             v-model="form.workTime"
-            type="daterange"
+            type="monthrange"
             style="width: 230px"
             unlink-panels
             range-separator="至"
@@ -41,7 +41,7 @@
             :default-value="[new Date(1995, 0, 1), new Date()]"
             @change="selectTime"
             :editable="true"
-            format="YYYY.MM.DD"
+            format="YYYYMM"
             @clear="clearData"
             @calendar-change="clearData"
           />
@@ -51,7 +51,7 @@
         <el-form-item label="建档时间">
           <el-date-picker
             v-model="form.archivesDate"
-            type="date"
+            type="month"
             placeholder="建档时间"
             :size="size"
             @change="selectArchivesDat"
@@ -62,13 +62,13 @@
             "
             @clear="clearData"
             @calendar-change="clearData"
-            format="YYYY.MM.DD"
+            format="YYYYMM"
             :editable="true"
           />
         </el-form-item>
       </el-col>
       <el-col :span="8">
-        <el-form-item label="合计工作时间">
+        <el-form-item label="总工作时间">
           <el-input v-model="workTimeSum" style="width: 100px" disabled />
           <p>月</p>
         </el-form-item>
@@ -89,11 +89,13 @@
       </el-col>
       <el-col :span="8"></el-col>
     </el-row>
+    <el-row> </el-row>
   </el-form>
 </template>
 
 <script lang="ts">
 import { ref, reactive, computed } from "vue";
+import IndexedDB from "../storage/IndexedDB.js";
 
 export default {
   name: "IndexView",
@@ -102,8 +104,8 @@ export default {
       name: "",
       person_type_select_value: "",
       position_value: "",
-      workTime: [],
-      archivesDate: {},
+      workTime: null,
+      archivesDate: null,
     });
 
     const size = "default";
@@ -377,12 +379,15 @@ export default {
         console.log(month);
       }
     };
-
+    //视同缴费月数
     let asTollMonth = ref(0);
 
     //实际缴费月数
     let actualToll = ref(0);
-    //视同缴费月数
+
+    //岗平均工资
+    let jobAvgSalay = reactive([]);
+
     let selectArchivesDat = () => {
       if (form.archivesDate != null && form.workTime != null) {
         asTollMonth.value = Math.round(
@@ -391,6 +396,64 @@ export default {
         );
         actualToll.value = workTimeSum.value - asTollMonth.value;
         // console.log(asTollMonth);
+        let i = 0;
+        openDB("pension", "1").then((db) => {
+          let averageSalaryList = [];
+          cursorGetData(db, "averageSalary", function (cursor) {
+            if (cursor) {
+              // 必须要检查
+              // while (
+
+              // ) {
+              //   cursor.continue();
+              // }
+              // console.log(
+              //   form.workTime[1].getFullYear().toString() +
+              //     form.workTime[1].getMonth().toString() >
+              //     cursor.value.year
+              // );
+              if (
+                cursor.value.year >
+                  form.archivesDate.getFullYear().toString() +
+                    form.archivesDate.getMonth().toString().padStart(2, "0") &&
+                cursor.value.year <=
+                  form.workTime[1].getFullYear().toString() +
+                    (form.workTime[1].getMonth() + 1)
+                      .toString()
+                      .padStart(2, "0")
+              ) {
+                // console.log(
+                //   form.archivesDate.getFullYear().toString() +
+                //     (form.workTime[0].getMonth() + 1) !=
+                //     cursor.value.year
+                // );
+                console.log(111);
+                cursor.continue(); // 遍历了存储对象中的所有内容
+                averageSalaryList.push(cursor.value);
+              } else {
+                cursor.continue();
+              }
+            } else {
+              // 合并同类
+              for (let i = 0, j = 1; i < averageSalaryList.length - 1; i++) {
+                if (
+                  averageSalaryList[i].year.slice(0, 4) !=
+                  averageSalaryList[i + 1].year.slice(0, 4)
+                ) {
+                  jobAvgSalay.push({
+                    year: averageSalaryList[i].year.slice(0, 4),
+                    averageSalary: averageSalaryList[i].averageSalary,
+                    month: j,
+                  });
+                  j = 1;
+                } else {
+                  j++;
+                }
+              }
+              console.log("游标读取的数据：", jobAvgSalay);
+            }
+          });
+        });
       }
     };
 
@@ -398,6 +461,7 @@ export default {
     let clearData = () => {
       workTimeSum.value = 0;
       asTollMonth.value = 0;
+      actualToll.value = 0;
       form.archivesDate = {};
     };
 
