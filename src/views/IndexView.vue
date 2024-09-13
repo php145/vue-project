@@ -9,6 +9,7 @@
       <el-col :span="8">
         <el-form-item label="人员类型">
           <el-cascader
+            style="width: 200px"
             v-model="person_type_select_value"
             :options="person_type_select_options"
             @change="person_type_select_handleChange"
@@ -29,38 +30,64 @@
       <el-col :span="8">
         <el-form-item label="工作时间">
           <el-date-picker
-            v-model="workTime"
+            v-model="form.workTime"
             type="daterange"
-            unlink-panels="true"
+            style="width: 230px"
+            unlink-panels
             range-separator="至"
             start-placeholder="开始时间"
             end-placeholder="退休时间"
             :size="size"
             :default-value="[new Date(1995, 0, 1), new Date()]"
-            :change="selectTime"
+            @change="selectTime"
+            :editable="true"
+            format="YYYY.MM.DD"
+            @clear="clearData"
+            @calendar-change="clearData"
           />
         </el-form-item>
       </el-col>
       <el-col :span="8">
         <el-form-item label="建档时间">
           <el-date-picker
-            v-model="value1"
+            v-model="form.archivesDate"
             type="date"
             placeholder="建档时间"
             :size="size"
+            @change="selectArchivesDat"
+            :disabled-date="disabledDate"
+            :disabled="form.workTime == null ? true : false"
+            :default-value="
+              form.workTime != null ? form.workTime[0] : new Date()
+            "
+            @clear="clearData"
+            @calendar-change="clearData"
+            format="YYYY.MM.DD"
+            :editable="true"
           />
         </el-form-item>
       </el-col>
       <el-col :span="8">
         <el-form-item label="合计工作时间">
-          <el-input
-            v-model="workTimeSum"
-            style="width: 240px"
-            disabled
-            placeholder="Please input"
-          />
+          <el-input v-model="workTimeSum" style="width: 100px" disabled />
+          <p>月</p>
         </el-form-item>
       </el-col>
+    </el-row>
+    <el-row>
+      <el-col :span="8">
+        <el-form-item label="视同缴费月数">
+          <el-input v-model="asTollMonth" style="width: 100px" disabled />
+          <p>月</p>
+        </el-form-item>
+      </el-col>
+      <el-col :span="8" :offset="-6">
+        <el-form-item label="实际缴费月数">
+          <el-input v-model="actualToll" style="width: 100px" disabled />
+          <p>月</p>
+        </el-form-item>
+      </el-col>
+      <el-col :span="8"></el-col>
     </el-row>
   </el-form>
 </template>
@@ -75,7 +102,8 @@ export default {
       name: "",
       person_type_select_value: "",
       position_value: "",
-      workTime: "",
+      workTime: [],
+      archivesDate: {},
     });
 
     const size = "default";
@@ -112,7 +140,10 @@ export default {
     };
 
     const disabledDate = (time: Date) => {
-      return time.getTime() > Date.now();
+      if (form.workTime != null) {
+        return time.getTime() < form.workTime[0];
+      }
+      // console.log(time.toLocaleString("zh-cn"));
     };
 
     //级联选择器
@@ -334,18 +365,49 @@ export default {
       // if (parseInt(position_option) < 5)
       //   position_options[position_option].children = children;
     }
-    let workTime = reactive([]);
 
-    let workTimeSum = ref("");
-
+    let workTimeSum = ref(0);
+    //工作时间选择器的改变事件
     let selectTime = () => {
-      console.log(111);
+      if (form.workTime != null) {
+        let millisecond =
+          form.workTime[1].getTime() - form.workTime[0].getTime();
+        let month = millisecond * 3.8026486208333e-10;
+        workTimeSum.value = Math.round(month);
+        console.log(month);
+      }
+    };
+
+    let asTollMonth = ref(0);
+
+    //实际缴费月数
+    let actualToll = ref(0);
+    //视同缴费月数
+    let selectArchivesDat = () => {
+      if (form.archivesDate != null && form.workTime != null) {
+        asTollMonth.value = Math.round(
+          (form.archivesDate.getTime() - form.workTime[0].getTime()) *
+            3.8026486208333e-10
+        );
+        actualToll.value = workTimeSum.value - asTollMonth.value;
+        // console.log(asTollMonth);
+      }
+    };
+
+    //清除数据
+    let clearData = () => {
+      workTimeSum.value = 0;
+      asTollMonth.value = 0;
+      form.archivesDate = {};
     };
 
     return {
+      actualToll,
+      clearData,
+      asTollMonth,
+      selectArchivesDat,
       workTimeSum,
       selectTime,
-      workTime,
       form,
       size,
       value1,
