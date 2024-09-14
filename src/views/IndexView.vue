@@ -114,16 +114,29 @@
               <span> 岗平均工资：{{ value.averageSalary }}</span>
               <br />
               <span>
-                实缴月数：<el-input
+                实缴月数：<el-input-number
                   v-model="value.month"
                   style="width: 90px"
                   size="small"
                   placeholder=""
+                  :min="value.monthMin"
+                  :max="value.monthMax"
                   :defalut="value.month"
-                  @change="reviseTollMonth(index)"
+                  :controls="false"
+                  @blur="reviseTollMonth(index, value)"
                   @focus="focusEvent(value)"
               /></span>
             </div>
+            <template #footer>
+              <div class="card-footer" style="text-align: right">
+                <el-button
+                  type="danger"
+                  :disabled="value.subItem == 0 ? true : false"
+                  @click="delSubReviseTollMonth(index, value)"
+                  >删除</el-button
+                >
+              </div>
+            </template>
           </el-card>
         </el-space>
       </el-form-item>
@@ -433,100 +446,100 @@ export default {
             3.8026486208333e-10
         );
         actualToll.value = workTimeSum.value - asTollMonth.value;
-        // console.log(asTollMonth);
         openDB("pension", "1").then((db) => {
           let averageSalaryList = [];
-          cursorGetData(db, "averageSalary", function (cursor) {
-            if (cursor) {
-              // 必须要检查
-              // while (
-
-              // ) {
-              //   cursor.continue();
-              // }
-              // console.log(
-              //   form.workTime[1].getFullYear().toString() +
-              //     form.workTime[1].getMonth().toString() >
-              //     cursor.value.year
-              // );
-              if (
-                cursor.value.year >
-                  form.archivesDate.getFullYear().toString() +
-                    form.archivesDate.getMonth().toString().padStart(2, "0") &&
-                cursor.value.year <=
-                  form.workTime[1].getFullYear().toString() +
-                    (form.workTime[1].getMonth() + 1)
-                      .toString()
-                      .padStart(2, "0")
-              ) {
-                // console.log(
-                //   form.archivesDate.getFullYear().toString() +
-                //     (form.workTime[0].getMonth() + 1) !=
-                //     cursor.value.year
-                // );
-                console.log(111);
+          cursorGetData(
+            db,
+            "averageSalary",
+            function (cursor) {
+              if (cursor) {
+                // if (
+                //   cursor.value.year >
+                //     form.archivesDate.getFullYear().toString() +
+                //       form.archivesDate.getMonth().toString().padStart(2, "0") &&
+                //   cursor.value.year <=
+                //     form.workTime[1].getFullYear().toString() +
+                //       (form.workTime[1].getMonth() + 1)
+                //         .toString()
+                //         .padStart(2, "0")
+                // ) {
+                //   console.log(111);
                 cursor.continue(); // 遍历了存储对象中的所有内容
-                averageSalaryList.push(cursor.value);
+                jobAvgSalay.push(cursor.value);
               } else {
                 cursor.continue();
               }
-            } else {
-              // 合并同类;
-              let i = 0,
-                j = 1;
-              for (i = 0, j = 1; i < averageSalaryList.length - 1; i++) {
-                if (
-                  averageSalaryList[i].year.slice(0, 4) !=
-                  averageSalaryList[i + 1].year.slice(0, 4)
-                ) {
-                  jobAvgSalay.push({
-                    year: averageSalaryList[i].year.slice(0, 4),
-                    averageSalary: averageSalaryList[i].averageSalary,
-                    month: j,
-                  });
-                  j = 1;
-                } else {
-                  j++;
-                }
-              }
-              jobAvgSalay.push({
-                year: averageSalaryList[i].year.slice(0, 4),
-                averageSalary: averageSalaryList[i].averageSalary,
-                month: j,
-                monthAveSal: 0,
-                subItem: 0,
-              });
-              console.log("游标读取的数据：", jobAvgSalay);
             }
-          });
+
+            //  else {
+            //   // 合并同类;
+            //   let i = 0,
+            //     j = 1;
+
+            //   for (i = 0, j = 1; i < averageSalaryList.length - 1; i++) {
+            //     if (
+            //       averageSalaryList[i].year.slice(0, 4) !=
+            //       averageSalaryList[i + 1].year.slice(0, 4)
+            //     ) {
+            //       jobAvgSalay.push({
+            //         year: averageSalaryList[i].year.slice(0, 4),
+            //         averageSalary: averageSalaryList[i].averageSalary,
+            //         month: j,
+            //         subItem: 0,
+            //         monthAveSal: 0,
+            //         monthMin: 1,
+            //         monthMax: j,
+            //       });
+            //       j = 1;
+            //     } else {
+            //       j++;
+            //     }
+            //   }
+            //   jobAvgSalay.push({
+            //     year: averageSalaryList[i].year.slice(0, 4),
+            //     averageSalary: averageSalaryList[i].averageSalary,
+            //     month: j,
+            //     monthAveSal: 0,
+            //     subItem: 0,
+            //     monthMin: 1,
+            //     monthMax: j,
+            //   });
+            //   console.log("游标读取的数据：", jobAvgSalay);
+            // }
+          );
         });
       }
     };
 
-    //修改缴费月数
     let oldMonth = 12;
-    let reviseTollMonth = (index) => {
-      if (
-        jobAvgSalay[index].month >= 1 &&
-        jobAvgSalay[index].month <
-          (jobAvgSalay[index].subItem == 0
-            ? jobAvgSalay[index].month
-            : jobAvgSalay[index - 1].month)
-      ) {
+    let reviseTollMonth = (index, value) => {
+      console.log("当前输入的月" + value.month);
+      if (value.month >= 1 && value.month < oldMonth) {
+        jobAvgSalay[index].monthMax = value.month;
+
         jobAvgSalay.splice(index + 1, 0, {
-          year: jobAvgSalay[index].year,
-          averageSalary: jobAvgSalay[index].averageSalary,
-          month: jobAvgSalay[index - 1].month - jobAvgSalay[index].month,
+          year: value.year,
+          averageSalary: value.averageSalary,
+          month: oldMonth - value.month,
           monthAveSal: 0,
-          subItem: jobAvgSalay[index]++,
+          subItem: value.subItem + 1,
+          monthMin: 1,
+          monthMax: oldMonth - value.month,
         });
       } else {
-        jobAvgSalay[index].month = jobAvgSalay[index - 1].month;
+        // jobAvgSalay[index].month = value.month;
       }
-      console.log(index);
     };
     let focusEvent = (value) => {
       oldMonth = value.month;
+      console.log("旧的月" + oldMonth);
+    };
+
+    //删除crad
+    let delSubReviseTollMonth = (index, value) => {
+      jobAvgSalay[index - 1].month += value.month;
+      jobAvgSalay[index - 1].monthMax = jobAvgSalay[index - 1].month;
+      jobAvgSalay.splice(index, 1);
     };
 
     //清除数据
@@ -535,9 +548,11 @@ export default {
       asTollMonth.value = 0;
       actualToll.value = 0;
       form.archivesDate = {};
+      jobAvgSalay.length = 0;
     };
 
     return {
+      delSubReviseTollMonth,
       focusEvent,
       reviseTollMonth,
       jobAvgSalay,

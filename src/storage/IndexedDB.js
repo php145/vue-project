@@ -40,23 +40,18 @@ function openDB(dbName, version = 1) {
       // 创建索引，在后面查询数据的时候可以根据索引查
       objectStore.createIndex("id", "id", { unique: true });
       objectStore.createIndex("year", "year", { unique: false });
-      objectStore.createIndex("month", "month", {
-        unique: false,
-      });
-      objectStore.createIndex("type", "type", { unique: false });
-      objectStore.createIndex("averageSalary", "averageSalary", {
-        unique: false,
-      });
+      // objectStore.createIndex("month", "month", {
+      //   unique: false,
+      // });
+      // objectStore.createIndex("type", "type", { unique: false });
+      // objectStore.createIndex("averageSalary", "averageSalary", {
+      //   unique: false,
+      // });
     };
   });
 }
 
-/**
- * 新增数据
- * @param {object} db 数据库实例
- * @param {string} storeName 仓库名称
- * @param {string} data 数据
- */
+
 function addData(db, storeName, data) {
   var request = db
     .transaction([storeName], "readwrite") // 事务对象 指定表格名称和操作模式（"只读"或"读写"）
