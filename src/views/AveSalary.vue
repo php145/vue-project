@@ -169,25 +169,21 @@ export default {
 
     openDB("pension", "1").then((db) => {
       console.log();
-      // let j = 1;
-      let subList = [];
-
-      for (let i = 0; i < tableData.length; i++) {
-        subList = [];
-        for (let j = 0; j < tableData[i].month; j++) {
-          subList.push({
-            id: j + 1,
-            year: tableData[i].year,
-            averageSalary: tableData[i].averageSalary,
-            month: j + 1,
+      let j = 1;
+      for (let k = 0; k < tableData.length; k++) {
+        let n = 0;
+        if (k != 0 && tableData[k].year == tableData[k - 1].year) {
+          n = tableData[k - 1].month;
+        }
+        for (let i = 1; i <= tableData[k].month; i++, j++) {
+          //(i < 10 ? "0" : "")
+          addData(db, "averageSalary", {
+            id: j,
+            year: tableData[k].year + "" + String(i + n).padStart(2, "0"),
+            averageSalary: tableData[k].averageSalary,
+            month: i + n,
           });
         }
-        addData(db, "averageSalary", {
-          id: i + 1,
-          year: tableData[i].year,
-          monthList: subList,
-          averageSalary: tableData[i].averageSalary,
-        });
       }
     });
     return { tableData };
