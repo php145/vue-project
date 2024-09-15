@@ -10,8 +10,8 @@
           router
           text-color="#fff"
         >
-          <router-link to="/Index">
-            <el-menu-item index="/Index">
+          <router-link to="/">
+            <el-menu-item index="/">
               <span>首页</span>
             </el-menu-item>
           </router-link>

@@ -12,8 +12,8 @@ const router = createRouter({
       component: HomeView,
       children: [
         {
-          path: "/Index",
-          name: "index",
+          path: "",
+          name: 'IndexView',
           component: IndexView,
         },
         {

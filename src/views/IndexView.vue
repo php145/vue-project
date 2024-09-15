@@ -17,10 +17,66 @@
         </el-form-item>
       </el-col>
       <el-col :span="8">
-        <el-form-item label="公务员职务和级别">
+        <el-form-item
+          label="公务员职务和级别"
+          v-if="person_type_select_value_sum == '00'"
+        >
           <el-cascader
             v-model="position_value"
             :options="position_options"
+            @change="position_handleChange"
+          />
+        </el-form-item>
+        <el-form-item
+          label="机关工人技术等级"
+          v-if="person_type_select_value_sum == '010'"
+        >
+          <el-cascader
+            v-model="agencyWorkerSkillLevelValue"
+            :options="agencyWorkerSkillLevelTabOpt"
+            @change="position_handleChange"
+          />
+        </el-form-item>
+
+        <el-form-item
+          label="普通工人岗位等级"
+          v-if="person_type_select_value_sum == '011'"
+        >
+          <el-cascader
+            v-model="agencyWorkerSkillLevelValue"
+            :options="agencyOrdinarySkillLevelTabOpt"
+            @change="position_handleChange"
+          />
+        </el-form-item>
+        <el-form-item
+          label="事业单位专技人员岗位和薪级"
+          v-if="person_type_select_value_sum == '10'"
+        >
+          <el-cascader
+            v-model="agencyWorkerSkillLevelValue"
+            :options="causeWorkmanLevAndSalSc"
+            @change="position_handleChange"
+          />
+        </el-form-item>
+
+        <el-form-item
+          label="事业单位管理人员岗位和薪级"
+          v-if="person_type_select_value_sum == '11'"
+        >
+          <el-cascader
+            v-model="agencyWorkerSkillLevelValue"
+            :options="causeWorkmanLevAndSalSc"
+            @change="position_handleChange"
+          />
+        </el-form-item>
+
+        <el-form-item
+          label="事业单位工人岗位和薪级"
+          v-if="person_type_select_value_sum == '12'"
+        >
+          <el-cascader
+            v-model="agencyWorkerSkillLevelValue"
+            :options="causeWorkmanLevAndSalSc"
             @change="position_handleChange"
           />
         </el-form-item>
@@ -37,7 +93,7 @@
             range-separator="至"
             start-placeholder="开始时间"
             end-placeholder="退休时间"
-            :size="size"
+            size="default"
             :default-value="[new Date(1995, 0, 1), new Date()]"
             @change="selectTime"
             :editable="true"
@@ -56,12 +112,14 @@
             :size="size"
             @change="selectArchivesDat"
             :disabled-date="disabledDate"
-            :disabled="form.workTime == null ? true : false"
-            :default-value="
-              form.workTime != null ? form.workTime[0] : new Date()
+            :disabled="
+              form.workTime != null && form.workTime.length != 0 ? false : true
             "
-            @clear="clearData"
-            @calendar-change="clearData"
+            :default-value="
+              form.workTime != null && form.workTime.length != 0
+                ? new Date()
+                : form.workTime[0]
+            "
             format="YYYYMM"
             :editable="true"
           />
@@ -177,8 +235,8 @@ export default {
       name: "",
       person_type_select_value: "",
       position_value: "",
-      workTime: null,
-      archivesDate: null,
+      workTime: [],
+      archivesDate: "",
       asTollexp: null,
       asTollMonth: null,
       actualToll: null,
@@ -190,6 +248,8 @@ export default {
 
     const value1 = ref("");
     const value2 = ref("");
+
+    let person_type_select_value_sum = ref("");
 
     // do not use same name with ref
 
@@ -220,35 +280,37 @@ export default {
     };
 
     const disabledDate = (time: Date) => {
-      if (form.workTime != null) {
-        return time.getTime() < form.workTime[0];
+      if (form.workTime != null && form.workTime.length != 0) {
+        return (
+          time.getTime() < form.workTime[0] && time.getTime() > form.workTime[1]
+        );
       }
       // console.log(time.toLocaleString("zh-cn"));
     };
 
     //级联选择器
 
-    const person_type_select_value = "";
+    const person_type_select_value = ref("");
 
     const person_type_select_options = [
       {
-        value: "Option1",
+        value: "0",
         label: "机关",
         children: [
           {
-            value: "Option1",
+            value: "0",
             label: "公务员",
           },
           {
-            value: "Option1",
+            value: "1",
             label: "工人",
             children: [
               {
-                value: "Option1",
+                value: "0",
                 label: "技术工人",
               },
               {
-                value: "Option1",
+                value: "1",
                 label: "普通工人",
               },
             ],
@@ -256,31 +318,38 @@ export default {
         ],
       },
       {
-        value: "Option3",
+        value: "1",
         label: "事业",
         children: [
           {
-            value: "Option1",
+            value: "0",
             label: "专技",
           },
           {
-            value: "Option1",
+            value: "1",
             label: "管理",
           },
           {
-            value: "Option1",
+            value: "2",
             label: "工人",
           },
         ],
       },
       {
-        value: "Option2",
+        value: "2",
         label: "企业",
       },
     ];
 
-    const person_type_select_handleChange = (value) => {
-      console.log("11111");
+    const person_type_select_handleChange = (values) => {
+      person_type_select_value_sum.value = "";
+      // for (let value in values) {
+      //   sum.join(value.toString());
+      // }
+      for (let i in values) {
+        person_type_select_value_sum.value += values[i];
+      }
+      console.log(person_type_select_value_sum.value);
     };
 
     //级联选择器
@@ -371,6 +440,14 @@ export default {
     ];
 
     // 公务员职务指数表
+    let cicvlPostExpTab = reactive([
+      [0.4738, 0.449],
+      [0.4066, 0.389],
+      [0.3175, 0.3069],
+      [0.2893, 0.2822],
+      [0.2363],
+      [0.2222],
+    ]);
 
     // 公务员级别指数表
     let cicvlServantExpTab = reactive([
@@ -462,8 +539,8 @@ export default {
     // 技术工人agencySkillWorker
     let agencySkillWorkerTab = reactive([
       [
-        0.3162, 0.3306, 0.3421, 0.3617, 0.3783, 0.3949, 0.4137, 0.4511, 0.472,
-        0.4928, 0.5136, 0.5366, 0.5596, 0.5825,
+        0.3162, 0.3306, 0.3451, 0.3617, 0.3783, 0.3949, 0.4137, 0.4324, 0.4511,
+        0.472, 0.4928, 0.5136, 0.5366, 0.5596, 0.5825,
       ], //1
       [
         0.2685, 0.2808, 0.2932, 0.3056, 0.3197, 0.3338, 0.348, 0.3642, 0.3805,
@@ -487,6 +564,55 @@ export default {
       0.3175, 0.326, 0.3345, 0.3437, 0.3529, 0.3628, 0.3726, 0.3836, 0.3945,
       0.4066, 0.4186, 0.432, 0.4454, 0.4599, 0.4744, 0.4899, 0.5055, 0.521,
       0.5366,
+    ]);
+    const agencyOrdinarySkillLevelTabOpt = computed(() => {
+      let totalTab = [];
+      for (let i = 0; i < agencyOrdinaryWorkerTab.length; i++) {
+        totalTab.push({ value: i, label: i + 1 + "级" });
+      }
+      return totalTab;
+    });
+
+    const agencyWorkerSkillLevelTabOpt = computed(() => {
+      // 合并机关技术工人的数组
+      let totalTab = [
+        { value: "0", label: "高级技师" },
+        { value: "1", label: "技师" },
+        { value: "2", label: "高级工" },
+        { value: "3", label: "中级工" },
+        { value: "4", label: "初级工" },
+      ];
+
+      let subTab = [];
+      for (let i = 0; i < agencySkillWorkerTab.length; i++) {
+        for (let j = 0; j < agencySkillWorkerTab[i].length; j++) {
+          subTab.push({
+            value: j,
+            label: j + 1 + "级",
+          });
+        }
+        totalTab[i]["children"] = subTab;
+        subTab = [];
+      }
+      console.log(totalTab);
+      return totalTab;
+    });
+
+    //事业单位工作人员岗位指数
+    //管理人员岗位
+    let causeManPersonnelLevTab = reactive([
+      1.4032, 1.1842, 0.8541, 0.7358, 0.5497, 0.4808, 0.3917, 0.3635, 0.3105,
+      0.2963,
+    ]);
+
+    //专技人员岗位
+    let causeSkillPersonnelLevTab = reactive([
+      1.2639, 0.9459, 0.8506, 0.7764, 0.5974, 0.5479, 0.5091, 0.4129, 0.3953,
+      0.3776, 0.3211, 0.3105, 0.2963,
+    ]);
+    // 工人岗位
+    let causeWorkmanLevTab = reactive([
+      0.4306, 0.3811, 0.3193, 0.3052, 0.2946, 0.2928,
     ]);
 
     //事业单位工作人员薪级指数表
@@ -514,14 +640,38 @@ export default {
       0.8902, 0.9185,
     ]);
 
-    // 管理工人薪级指数表
-    let skillSaLvExpTab = reactive([
+    // 工人薪级指数表
+    let causeWorkmanSaLvExpTab = reactive([
       0.0247, 0.0283, 0.0318, 0.0357, 0.0396, 0.0438, 0.048, 0.0523, 0.0569,
       0.0615, 0.0664, 0.0714, 0.0767, 0.082, 0.0876, 0.0933, 0.0996, 0.106,
       0.113, 0.1201, 0.1282, 0.1364, 0.1445, 0.1526, 0.1607, 0.1689, 0.178,
       0.1872, 0.1964, 0.2067, 0.2169, 0.2271, 0.2384, 0.2498, 0.2611, 0.2734,
       0.2858, 0.2981, 0.3105, 0.3232,
     ]);
+
+    // 事业单位工作人员岗位薪级
+    let causeWorkmanLevAndSalSc = computed(() => {
+      let totalTab = [];
+      switch (person_type_select_value_sum.value) {
+        case "11":
+        case "10":
+          {
+            for (let i = 0; i < causeSkillPersonnelSaLvExpTab.length; i++) {
+              totalTab.push({ value: i, label: i + 1 + "级" });
+            }
+          }
+          break;
+        case "12":
+          {
+            for (let i = 0; i < causeWorkmanSaLvExpTab.length; i++) {
+              totalTab.push({ value: i, label: i + 1 + "级" });
+            }
+          }
+          break;
+      }
+      //
+      return totalTab;
+    });
 
     // 退休补贴指数表
     let retireExpTab = reactive([
@@ -714,8 +864,10 @@ export default {
     let selectArchivesDat = () => {
       if (
         form.archivesDate != null &&
+        form.archivesDate.length != 0 &&
         form.workTime != null &&
-        form.archivesDate.getFullYear > "1998"
+        form.workTime.length != 0 &&
+        form.archivesDate.getFullYear.toString() > "1998"
       ) {
         form.asTollMonth = Math.round(
           (form.archivesDate.getTime() - form.workTime[0].getTime()) *
@@ -848,7 +1000,7 @@ export default {
       workTimeSum.value = 0;
       form.asTollMonth = 0;
       form.actualToll = null;
-      form.archivesDate = {};
+      form.archivesDate = "";
       jobAvgSalay.length = 0;
     };
 
@@ -875,6 +1027,18 @@ export default {
       person_type_select_handleChange,
       position_value,
       position_handleChange,
+      person_type_select_value_sum,
+      agencyWorkerSkillLevelTabOpt,
+      agencyOrdinarySkillLevelTabOpt,
+      causeWorkmanLevAndSalSc,
+      // retireExpTab,
+      // skillSaLvExpTab,
+      // causeSkillPersonnelSaLvExpTab,
+      // causeManPersonnelSaLvExpTab,
+      // agencySkillWorkerTab,
+      // cicvlPostExpTab,
+      // cicvlServantExpTab,
+      // agencyWorkerSkillLevelTab,
     };
   },
 };
