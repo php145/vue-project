@@ -99,7 +99,6 @@
             :editable="true"
             format="YYYYMM"
             @clear="clearData"
-            @calendar-change="clearData"
           />
         </el-form-item>
       </el-col>
@@ -282,7 +281,7 @@ export default {
     const disabledDate = (time: Date) => {
       if (form.workTime != null && form.workTime.length != 0) {
         return (
-          time.getTime() < form.workTime[0] && time.getTime() > form.workTime[1]
+          time.getTime() < form.workTime[0] || time.getTime() > form.workTime[1]
         );
       }
       // console.log(time.toLocaleString("zh-cn"));
@@ -997,6 +996,7 @@ export default {
 
     //清除数据
     let clearData = () => {
+      form.workTime = [];
       workTimeSum.value = 0;
       form.asTollMonth = 0;
       form.actualToll = null;

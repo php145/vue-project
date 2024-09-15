@@ -13,6 +13,8 @@
 <script lang="ts">
 import IndexedDB from "../storage/IndexedDB.js";
 import { ref, reactive } from "vue";
+import Localforage from "localforage";
+
 export default {
   setup() {
     let tableData = reactive([
@@ -166,7 +168,6 @@ export default {
     // for (let i = 0; i < storagedata.length; i++) {
     //   console.log(storagedata[i]);
     // }
-
     openDB("pension", "1").then((db) => {
       console.log();
       let j = 1;
