@@ -5,7 +5,7 @@
  * @param {string} version 数据库的版本
  * @return {object} 该函数会返回一个数据库实例
  */
-function openDB(dbName, version = 1) {
+export const openDB = (dbName, version = 1) => {
   return new Promise((resolve, reject) => {
     //  兼容浏览器
     var indexedDB =
@@ -52,7 +52,7 @@ function openDB(dbName, version = 1) {
 }
 
 
-function addData(db, storeName, data) {
+export const addData = (db, storeName, data) => {
   var request = db
     .transaction([storeName], "readwrite") // 事务对象 指定表格名称和操作模式（"只读"或"读写"）
     .objectStore(storeName) // 仓库对象
@@ -72,7 +72,7 @@ function addData(db, storeName, data) {
  * @param {object} db 数据库实例
  * @param {string} storeName 仓库名称
  */
-function cursorGetData(db, storeName, callback) {
+export const cursorGetData = (db, storeName, callback) => {
   let list = [];
   var store = db
     .transaction(storeName, "readwrite") // 事务

@@ -32,7 +32,7 @@
           v-if="person_type_select_value_sum == '010'"
         >
           <el-cascader
-            v-model="agencyWorkerSkillLevelValue"
+            v-model="position_value"
             :options="agencyWorkerSkillLevelTabOpt"
             @change="position_handleChange"
           />
@@ -43,39 +43,39 @@
           v-if="person_type_select_value_sum == '011'"
         >
           <el-cascader
-            v-model="agencyWorkerSkillLevelValue"
+            v-model="position_value"
             :options="agencyOrdinarySkillLevelTabOpt"
             @change="position_handleChange"
           />
         </el-form-item>
         <el-form-item
-          label="事业单位专技人员岗位和薪级"
+          label="事业单位专技人员岗位等级和薪级"
           v-if="person_type_select_value_sum == '10'"
         >
           <el-cascader
-            v-model="agencyWorkerSkillLevelValue"
+            v-model="position_value"
             :options="causeWorkmanLevAndSalSc"
             @change="position_handleChange"
           />
         </el-form-item>
 
         <el-form-item
-          label="事业单位管理人员岗位和薪级"
+          label="事业单位管理人员岗位等级和薪级"
           v-if="person_type_select_value_sum == '11'"
         >
           <el-cascader
-            v-model="agencyWorkerSkillLevelValue"
+            v-model="position_value"
             :options="causeWorkmanLevAndSalSc"
             @change="position_handleChange"
           />
         </el-form-item>
 
         <el-form-item
-          label="事业单位工人岗位和薪级"
+          label="事业单位工人岗位等级和薪级"
           v-if="person_type_select_value_sum == '12'"
         >
           <el-cascader
-            v-model="agencyWorkerSkillLevelValue"
+            v-model="position_value"
             :options="causeWorkmanLevAndSalSc"
             @change="position_handleChange"
           />
@@ -83,6 +83,41 @@
       </el-col>
     </el-row>
     <el-row>
+      <el-col :span="8">
+        <el-form-item label="退休补贴指数">
+          <el-select
+            v-model="retireSubsidyExp"
+            placeholder="档位/标准/指数"
+            style="width: 240px"
+            :disabled="
+              (position_value != null && position_value.length != 0) ||
+              person_type_select_value_sum == '2'
+                ? false
+                : true
+            "
+            @change="retireSubsidyExpHandleChange"
+          >
+            <el-option
+              v-for="item in retireSubsidyExpOpt"
+              :key="item.value"
+              :label="item.exp"
+              :value="item.exp"
+            >
+              <el-row>
+                <el-col :span="8"
+                  ><span>{{ item.value }}</span>
+                </el-col>
+                <el-col :span="8">
+                  <span>{{ item.SubsidyStd }}</span>
+                </el-col>
+                <el-col :span="8">
+                  <span>{{ item.exp }}</span>
+                </el-col>
+              </el-row>
+            </el-option>
+          </el-select>
+        </el-form-item>
+      </el-col>
       <el-col :span="8">
         <el-form-item label="工作时间">
           <el-date-picker
@@ -96,9 +131,15 @@
             size="default"
             :default-value="[new Date(1995, 0, 1), new Date()]"
             @change="selectTime"
+            :disabled="
+              person_type_select_value != null &&
+              person_type_select_value.length != 0
+                ? false
+                : true
+            "
+            @clear="clearData"
             :editable="true"
             format="YYYYMM"
-            @clear="clearData"
           />
         </el-form-item>
       </el-col>
@@ -110,6 +151,7 @@
             placeholder="建档时间"
             :size="size"
             @change="selectArchivesDat"
+            @clear="clearData"
             :disabled-date="disabledDate"
             :disabled="
               form.workTime != null && form.workTime.length != 0 ? false : true
@@ -122,12 +164,6 @@
             format="YYYYMM"
             :editable="true"
           />
-        </el-form-item>
-      </el-col>
-      <el-col :span="8">
-        <el-form-item label="总工作时间">
-          <el-input v-model="workTimeSum" style="width: 100px" disabled />
-          <p>月</p>
         </el-form-item>
       </el-col>
     </el-row>
@@ -144,34 +180,65 @@
           <p>月</p>
         </el-form-item>
       </el-col>
-      <el-col :span="8"></el-col>
+      <el-col :span="8">
+        <el-form-item label="总工作时间">
+          <el-input v-model="workTimeSum" style="width: 100px" disabled />
+          <p>月</p>
+        </el-form-item>
+      </el-col>
     </el-row>
     <el-row>
       <el-col :span="8">
         <el-form-item label="视同缴费指数">
-          <el-input v-model="form.asTollexp" style="width: 100px" disabled />
+          <el-input v-model="form.asTollexp" style="width: 240px" disabled />
         </el-form-item>
       </el-col>
       <el-col :span="8" :offset="-6">
         <el-form-item label="实际缴费指数">
           <el-input
             v-model="form.actualTollexp"
-            style="width: 100px"
+            style="width: 240px"
             disabled
           />
         </el-form-item>
       </el-col>
       <el-col :span="8" :offset="-6">
         <el-form-item label="平均缴费指数">
-          <el-input v-model="form.avgTollexp" style="width: 100px" disabled />
+          <el-input v-model="form.avgTollexp" style="width: 240px" disabled />
         </el-form-item>
+      </el-col>
+    </el-row>
+    <el-row>
+      <el-col :span="8">
+        <el-form-item label="个人帐户养老金">
+          <el-input v-model="form.PersonalAccPension" style="width: 240px"
+        /></el-form-item>
+      </el-col>
+      <el-col :span="8" :offset="-6">
+        <el-form-item label="基础养老金">
+          <el-input v-model="form.BasePension" style="width: 240px" disabled
+        /></el-form-item>
+      </el-col>
+      <el-col :span="8" :offset="-6">
+        <el-form-item label="过渡性养老金"
+          ><el-input
+            v-model="form.TransitionPension"
+            style="width: 240px"
+            disabled
+          />
+        </el-form-item>
+      </el-col>
+    </el-row>
+    <el-row>
+      <el-col :span="8">
+        <el-form-item label="月应发基本养老金合计："> </el-form-item>
       </el-col>
     </el-row>
     <el-row>
       <el-form-item>
         <el-space wrap>
           <el-card
-            v-for="(value, index) in jobAvgSalay"
+            v-for="(value, index) in form.jobAvgSalay"
             :key="index"
             class="box-card"
             style="width: 200px"
@@ -225,7 +292,7 @@
 
 <script lang="ts">
 import { ref, reactive, watch, computed } from "vue";
-import IndexedDB from "../storage/IndexedDB.js";
+import { openDB, cursorGetData } from "../storage/IndexedDB.js";
 
 export default {
   name: "IndexView",
@@ -233,14 +300,17 @@ export default {
     const form = reactive({
       name: "",
       person_type_select_value: "",
-      position_value: "",
       workTime: [],
       archivesDate: "",
       asTollexp: null,
       asTollMonth: null,
       actualToll: null,
-      actualTollexp: null,
-      avgTollexp: null,
+      actualTollexp: 0,
+      avgTollexp: 0,
+      jobAvgSalay: [],
+      TransitionPension: 0,
+      BasePension: 0,
+      PersonalAccPension: null,
     });
 
     const size = "default";
@@ -281,7 +351,8 @@ export default {
     const disabledDate = (time: Date) => {
       if (form.workTime != null && form.workTime.length != 0) {
         return (
-          time.getTime() < form.workTime[0] || time.getTime() > form.workTime[1]
+          time.getTime() < form.workTime[0] ||
+          time.getTime() >= form.workTime[1]
         );
       }
       // console.log(time.toLocaleString("zh-cn"));
@@ -341,6 +412,7 @@ export default {
     ];
 
     const person_type_select_handleChange = (values) => {
+      position_value.value = [];
       person_type_select_value_sum.value = "";
       // for (let value in values) {
       //   sum.join(value.toString());
@@ -353,90 +425,112 @@ export default {
 
     //级联选择器
     //机关公务员级联选择器
-    const position_value = [];
+    const position_value = ref([]);
 
     const position_props = {
       expandTrigger: "hover" as const,
     };
 
-    const position_handleChange = (value) => {
-      console.log(value);
-    };
+    const position_options = computed(function () {
+      let civilOpt = [
+        {
+          value: 0,
+          label: "县处级正职",
+          children: [
+            {
+              value: 0,
+              label: "领导职务",
+              children: [],
+            },
+            {
+              value: 1,
+              label: "非领导职务",
+              children: [],
+            },
+          ],
+        },
+        {
+          value: 1,
+          label: "县处级副职",
+          children: [
+            {
+              value: 0,
+              label: "领导职务",
+              children: [],
+            },
+            {
+              value: 1,
+              label: "非领导职务",
+              children: [],
+            },
+          ],
+        },
+        {
+          value: 2,
+          label: "乡科级正职",
+          children: [
+            {
+              value: 0,
+              label: "领导职务",
+              children: [],
+            },
+            {
+              value: "1",
+              label: "非领导职务",
+              children: [],
+            },
+          ],
+        },
+        {
+          value: 3,
+          label: "乡科级副职",
+          children: [
+            {
+              value: "0",
+              label: "领导职务",
+              children: [],
+            },
+            {
+              value: "1",
+              label: "非领导职务",
+              children: [],
+            },
+          ],
+        },
+        {
+          value: 4,
+          label: "科员",
+        },
+        {
+          value: 5,
+          label: "办事员",
+        },
+      ];
+      let levelSubTab = [];
+      let gearSubTab = [];
+      for (let i = 0; i < cicvlServantExpTab.length; i++) {
+        for (let j = 0; j < cicvlServantExpTab[i].length; j++) {
+          gearSubTab.push({
+            value: j,
+            label: j + 1 + "档",
+          });
+        }
+        levelSubTab.push({
+          value: i,
+          label: i + 1 + "级",
+          children: gearSubTab,
+        });
+        gearSubTab = [];
+      }
 
-    const position_options = [
-      {
-        value: "county_division",
-        label: "县处级正职",
-        children: [
-          {
-            value: "leadership",
-            label: "领导职务",
-            children: [],
-          },
-          {
-            value: "non_navigation",
-            label: "非领导职务",
-            children: [],
-          },
-        ],
-      },
-      {
-        value: "county_deputy_division",
-        label: "县处级副职",
-        children: [
-          {
-            value: "leadership",
-            label: "领导职务",
-            children: [],
-          },
-          {
-            value: "non_navigation",
-            label: "非领导职务",
-            children: [],
-          },
-        ],
-      },
-      {
-        value: "village_Section",
-        label: "乡科级正职",
-        children: [
-          {
-            value: "leadership",
-            label: "领导职务",
-            children: [],
-          },
-          {
-            value: "non_navigation",
-            label: "非领导职务",
-            children: [],
-          },
-        ],
-      },
-      {
-        value: "county_deputy_section",
-        label: "乡科级副职",
-        children: [
-          {
-            value: "leadership",
-            label: "领导职务",
-            children: [],
-          },
-          {
-            value: "non_navigation",
-            label: "非领导职务",
-            children: [],
-          },
-        ],
-      },
-      {
-        value: "clerk",
-        label: "科员",
-      },
-      {
-        value: "officer",
-        label: "办事员",
-      },
-    ];
+      for (let i = 0; i < civilOpt.length - 2; i++) {
+        for (let j = 0; j < civilOpt[i].children.length; j++) {
+          // console.log(civilOpt[i]);
+          civilOpt[i].children[j]["children"] = levelSubTab;
+        }
+      }
+      return civilOpt;
+    });
 
     // 公务员职务指数表
     let cicvlPostExpTab = reactive([
@@ -452,7 +546,7 @@ export default {
     let cicvlServantExpTab = reactive([
       [1.0668, 1.1234, 1.1799, 1.2364, 1.2929, 1.3494], //1
       [0.9785, 1.0297, 1.081, 1.1322, 1.1834, 1.2346, 1.2859], //2
-      [0.8937, 0.9432, 0.9927, 1.0421, 1.0916, 1.141, 1.1905, 1.1453, 1.1933], //3
+      [0.8937, 0.9432, 0.9927, 1.0421, 1.0916, 1.141, 1.1905, 1.2399], //3
       [0.809, 0.857, 0.905, 0.9531, 1.0011, 1.0492, 1.0972, 1.1453, 1.1933], //4
       [
         0.7312, 0.7779, 0.8245, 0.8711, 0.9178, 0.9644, 1.011, 1.0577, 1.1043,
@@ -488,7 +582,7 @@ export default {
       ], //12
       [
         0.3617, 0.3879, 0.414, 0.4402, 0.4663, 0.4924, 0.5186, 0.5447, 0.5709,
-        0.6231, 0.6493, 0.6754, 0.7016,
+        0.597, 0.6231, 0.6493, 0.6754, 0.7016,
       ], //13
       [
         0.3314, 0.3557, 0.3801, 0.4045, 0.4289, 0.4532, 0.4776, 0.502, 0.5264,
@@ -534,6 +628,7 @@ export default {
     let agencyWorkerSkillLevelTab = reactive([
       0.2822, 0.2328, 0.1709, 0.1568, 0.1462,
     ]);
+
     //agency 机关工人岗位指数表
     // 技术工人agencySkillWorker
     let agencySkillWorkerTab = reactive([
@@ -593,7 +688,7 @@ export default {
         totalTab[i]["children"] = subTab;
         subTab = [];
       }
-      console.log(totalTab);
+      // console.log(totalTab);
       return totalTab;
     });
 
@@ -648,26 +743,91 @@ export default {
       0.2858, 0.2981, 0.3105, 0.3232,
     ]);
 
-    // 事业单位工作人员岗位薪级
+    // 事业单位工作人员岗位等级和薪级
     let causeWorkmanLevAndSalSc = computed(() => {
       let totalTab = [];
       switch (person_type_select_value_sum.value) {
-        case "11":
         case "10":
           {
-            for (let i = 0; i < causeSkillPersonnelSaLvExpTab.length; i++) {
-              totalTab.push({ value: i, label: i + 1 + "级" });
+            let subList = [];
+            for (let j = 0; j < causeSkillPersonnelSaLvExpTab.length; j++) {
+              subList.push({
+                value: j,
+                label: j + 1 + "级薪资",
+              });
+            }
+            for (let i = 0; i < causeSkillPersonnelLevTab.length; i++) {
+              totalTab.push({
+                value: i,
+                label: i + 1 + "级岗位",
+                children: subList,
+              });
+            }
+          }
+          break;
+        case "11":
+          {
+            let subList = [];
+            for (let j = 0; j < causeManPersonnelSaLvExpTab.length; j++) {
+              subList.push({
+                value: j,
+                label: j + 1 + "级薪资",
+              });
+            }
+            for (let i = 0; i < causeManPersonnelLevTab.length; i++) {
+              totalTab.push({
+                value: i,
+                label: i + 1 + "级岗位",
+                children: subList,
+              });
             }
           }
           break;
         case "12":
           {
-            for (let i = 0; i < causeWorkmanSaLvExpTab.length; i++) {
-              totalTab.push({ value: i, label: i + 1 + "级" });
+            let subList = [];
+            for (let j = 0; j < causeWorkmanSaLvExpTab.length; j++) {
+              subList.push({
+                value: j,
+                label: j + 1 + "级薪资",
+              });
             }
+            totalTab = [
+              {
+                value: 0,
+                label: "技术工1级",
+                children: subList,
+              },
+              {
+                value: 1,
+                label: "技术工2级",
+                children: subList,
+              },
+              {
+                value: 2,
+                label: "技术工3级",
+                children: subList,
+              },
+              {
+                value: 3,
+                label: "技术工4级",
+                children: subList,
+              },
+              {
+                value: 4,
+                label: "技术工5级",
+                children: subList,
+              },
+              {
+                value: 5,
+                label: "普通工",
+                children: subList,
+              },
+            ];
           }
           break;
       }
+
       //
       return totalTab;
     });
@@ -769,97 +929,22 @@ export default {
       [900, 0.0755],
     ]);
 
-    let level_children = [];
-    for (let i = 0; i < 27; i++) {
-      let stalls_children = [];
-      let n = 14;
-
-      switch (i + 1) {
-        case 1:
-        case 26:
-        case 27:
-          n = 6;
-          break;
-        case 2:
-        case 25:
-          n = 7;
-          break;
-        case 3:
-        case 23:
-        case 24:
-          n = 8;
-          break;
-        case 4:
-        case 22:
-          n = 9;
-          break;
-        case 5:
-        case 21:
-          n = 10;
-          break;
-        case 6:
-        case 7:
-        case 8:
-        case 9:
-        case 10:
-        case 20:
-          n = 11;
-          break;
-        case 11:
-        case 19:
-          n = 12;
-          break;
-        case 12:
-        case 17:
-        case 18:
-          n = 13;
-          break;
-        case 13:
-        case 14:
-        case 15:
-        case 16:
-          n = 14;
-          break;
-      }
-      for (let i = 0; i < n; i++) {
-        stalls_children[i] = { value: "stalls_" + i + 1, label: i + 1 + "档" };
-      }
-      level_children[i] = {
-        value: "level_" + i + 1,
-        label: i + 1 + "级",
-        children: stalls_children,
-      };
-    }
-
-    // console.log(level_children);
-
-    for (let position_option in position_options) {
-      if (parseInt(position_option) < 4) {
-        // console.log(position_options[position_option].children["0"]);
-        position_options[position_option].children["0"]["children"] =
-          level_children;
-        position_options[position_option].children["1"]["children"] =
-          level_children;
-      }
-      // if (parseInt(position_option) < 5)
-      //   position_options[position_option].children = children;
-    }
-
     let workTimeSum = ref(0);
     //工作时间选择器的改变事件
     let selectTime = () => {
+      form.archivesDate = "";
+      workTimeSum.value = 0;
+      form.jobAvgSalay = [];
       if (form.workTime != null) {
         let millisecond =
           form.workTime[1].getTime() - form.workTime[0].getTime();
         let month = millisecond * 3.8026486208333e-10;
-        workTimeSum.value = Math.round(month);
+        workTimeSum.value = Math.round(month + 1);
         console.log(month);
       }
     };
-
+    let averageSalaryList = [];
     //岗平均工资
-    let jobAvgSalay = reactive([]);
-
     let selectArchivesDat = () => {
       if (
         form.archivesDate != null &&
@@ -872,76 +957,91 @@ export default {
           (form.archivesDate.getTime() - form.workTime[0].getTime()) *
             3.8026486208333e-10
         );
+
+        // 实际缴费时间
         form.actualToll = workTimeSum.value - form.asTollMonth;
+        if (averageSalaryList == null || averageSalaryList.length == 0) {
+          openDB("pension", "1").then((db) => {
+            form.jobAvgSalay = [];
+            cursorGetData(db, "averageSalary", function (cursor) {
+              if (cursor) {
+                // 必须要检查
+                // while (
 
-        openDB("pension", "1").then((db) => {
-          let averageSalaryList = [];
-          cursorGetData(db, "averageSalary", function (cursor) {
-            if (cursor) {
-              // 必须要检查
-              // while (
-
-              if (
-                cursor.value.year >
-                  form.archivesDate.getFullYear().toString() +
-                    form.archivesDate.getMonth().toString().padStart(2, "0") &&
-                cursor.value.year <=
-                  form.workTime[1].getFullYear().toString() +
-                    (form.workTime[1].getMonth() + 1)
-                      .toString()
-                      .padStart(2, "0")
-              ) {
-                console.log(111);
-                cursor.continue(); // 遍历了存储对象中的所有内容
-                averageSalaryList.push(cursor.value);
-              } else {
-                cursor.continue();
-              }
-            } else {
-              let tolList = [];
-              // console.log("游标读取的数据：", averageSalaryList);
-              // 一维数组变成二维数组
-              let subItem = [];
-              let i = 0;
-              for (; i < averageSalaryList.length - 1; i++) {
                 if (
-                  averageSalaryList[i].year.slice(0, 4) ==
-                    averageSalaryList[i + 1].year.slice(0, 4) &&
-                  averageSalaryList[i].averageSalary ==
-                    averageSalaryList[i + 1].averageSalary
+                  cursor.value.year >
+                    form.archivesDate.getFullYear().toString() +
+                      form.archivesDate
+                        .getMonth()
+                        .toString()
+                        .padStart(2, "0") &&
+                  cursor.value.year <=
+                    form.workTime[1].getFullYear().toString() +
+                      (form.workTime[1].getMonth() + 1)
+                        .toString()
+                        .padStart(2, "0")
                 ) {
-                  subItem.push(averageSalaryList[i]);
+                  console.log(111);
+                  cursor.continue(); // 遍历了存储对象中的所有内容
+                  averageSalaryList.push(cursor.value);
                 } else {
-                  subItem.push(averageSalaryList[i]);
-                  jobAvgSalay.push({
-                    year: subItem[0].year.slice(0, 4),
-                    subList: subItem,
-                    subItem: 0,
-                    monthAveSal: null,
-                    monthMin: 1,
-                    monthMax: subItem.length,
-                    averageSalary: subItem[0].averageSalary,
-                    month: subItem.length,
-                  });
-                  subItem = [];
+                  cursor.continue();
                 }
+              } else {
+                // console.log("游标读取的数据：", averageSalaryList);
+                // 一维数组变成二维数组
+                let subItem = [];
+                let i = 0;
+                for (; i < averageSalaryList.length - 1; i++) {
+                  if (
+                    averageSalaryList[i].year.slice(0, 4) ==
+                      averageSalaryList[i + 1].year.slice(0, 4) &&
+                    averageSalaryList[i].averageSalary ==
+                      averageSalaryList[i + 1].averageSalary
+                  ) {
+                    subItem.push(averageSalaryList[i]);
+                  } else {
+                    subItem.push(averageSalaryList[i]);
+                    form.jobAvgSalay.push({
+                      year: subItem[0].year.slice(0, 4),
+                      subList: subItem,
+                      subItem: 0,
+                      monthAveSal: null,
+                      monthMin: 1,
+                      monthMax: subItem.length,
+                      averageSalary: subItem[0].averageSalary,
+                      month: subItem.length,
+                    });
+                    subItem = [];
+                  }
+                }
+                subItem.push(averageSalaryList[i]);
+                form.jobAvgSalay.push({
+                  year: subItem[0].year.slice(0, 4),
+                  subList: subItem,
+                  subItem: 0,
+                  monthAveSal: null,
+                  monthMin: 1,
+                  monthMax: subItem.length,
+                  averageSalary: subItem[0].averageSalary,
+                  month: subItem.length,
+                });
+                subItem = [];
+                if (person_type_select_value.value == "2") {
+                  for (let i = 0; i < form.jobAvgSalay.length; i++) {
+                    if (
+                      form.jobAvgSalay[i].year == 2017 ||
+                      form.jobAvgSalay[i].year == 2018
+                    ) {
+                      form.jobAvgSalay[i].averageSalary = 4491;
+                    }
+                  }
+                }
+                // console.log("tolList", form.jobAvgSalay);
               }
-              subItem.push(averageSalaryList[i]);
-              jobAvgSalay.push({
-                year: subItem[0].year.slice(0, 4),
-                subList: subItem,
-                subItem: 0,
-                monthAveSal: null,
-                monthMin: 1,
-                monthMax: subItem.length,
-                averageSalary: subItem[0].averageSalary,
-                month: subItem.length,
-              });
-              subItem = [];
-              console.log("tolList", tolList);
-            }
+            });
           });
-        });
+        }
       }
     };
 
@@ -950,9 +1050,9 @@ export default {
     let reviseTollMonth = (index, value) => {
       console.log("当前输入的月" + value.month);
       if (value.month >= 1 && value.month < oldMonth) {
-        jobAvgSalay[index].monthMax = value.month;
+        form.jobAvgSalay[index].monthMax = value.month;
 
-        jobAvgSalay.splice(index + 1, 0, {
+        form.jobAvgSalay.splice(index + 1, 0, {
           year: value.year,
           averageSalary: value.averageSalary,
           month: oldMonth - value.month,
@@ -974,24 +1074,168 @@ export default {
     let avgSalayInptEvn = () => {
       let i = 0;
       let actualTollexpSum = 0;
-      for (i = 0; i < jobAvgSalay.length; i++) {
-        if (jobAvgSalay[i].monthAveSal == null) {
+      for (i = 0; i < form.jobAvgSalay.length; i++) {
+        if (form.jobAvgSalay[i].monthAveSal == null) {
           break;
         }
         actualTollexpSum +=
-          (jobAvgSalay[i].averageSalary / jobAvgSalay[i].monthAveSal) *
-          jobAvgSalay[i].month;
+          (form.jobAvgSalay[i].monthAveSal /
+            form.jobAvgSalay[i].averageSalary) *
+          form.jobAvgSalay[i].month;
       }
-      if (i == jobAvgSalay.length) {
+      if (i == form.jobAvgSalay.length) {
         form.actualTollexp = actualTollexpSum / form.actualToll;
+        console.log(form.jobAvgSalay);
       }
+    };
+
+    watch(
+      [() => form.asTollexp, () => form.actualTollexp],
+      ([asTollexp, actualTollexp]) => {
+        console.log(
+          "视同缴费指数" + asTollexp + "实际缴费指数" + actualTollexp
+        );
+        if (
+          asTollexp != null &&
+          actualTollexp != null &&
+          asTollexp != 0 &&
+          actualTollexp != 0
+        ) {
+          form.avgTollexp =
+            (asTollexp * form.asTollMonth + actualTollexp * form.actualToll) /
+            workTimeSum.value;
+        }
+      },
+      {
+        // 页面加载会先执行一次
+        immediate: true,
+      }
+    );
+
+    let retireSubsidyExp = ref();
+    let retireSubsidyStad = ref();
+    let retireSubsidyExpOpt = computed(function () {
+      let tableData = [];
+      for (let i = 0; i < retireExpTab.length; i++) {
+        tableData.push({
+          value: i + 1 + "档",
+          exp: retireExpTab[i][1],
+          SubsidyStd: retireExpTab[i][0],
+        });
+      }
+      return tableData;
+    });
+    // 两指数之和
+    let expSum = 0;
+    // 查找视同缴费指数
+    const position_handleChange = (value) => {
+      console.log(
+        "退休补贴选择器：" +
+          retireSubsidyExp.value +
+          "\n岗位薪资选择器" +
+          value.length
+      );
+      expSum = 0;
+      retireSubsidyExp.value = "";
+      form.asTollexp = "";
+      switch (person_type_select_value_sum.value) {
+        case "00":
+          // 算公务员的视同指数
+          {
+            if (value.length != 1) {
+              expSum =
+                cicvlPostExpTab[value[0]][value[1]] +
+                cicvlServantExpTab[value[2]][value[3]];
+              console.log(
+                cicvlPostExpTab[value[0]][value[1]] +
+                  "  " +
+                  cicvlServantExpTab[value[2]][value[3]]
+              );
+            } else {
+              expSum = cicvlPostExpTab[value][0];
+              console.log(cicvlPostExpTab[value][0]);
+            }
+          }
+          break;
+        case "010":
+          // 算机关技术工人的视同指数
+          {
+            expSum =
+              agencyWorkerSkillLevelTab[value[0]] +
+              agencySkillWorkerTab[value[0]][value[1]];
+            console.log(
+              agencyWorkerSkillLevelTab[value[0]] +
+                "   " +
+                agencySkillWorkerTab[value[0]][value[1]]
+            );
+          }
+          break;
+        case "011":
+          // 算普通机关工人的视同指数
+          {
+            expSum = agencyOrdinaryWorkerTab[value];
+            console.log(agencyOrdinaryWorkerTab[value]);
+          }
+          break;
+        case "10":
+          // 算事业专技的视同指数
+          {
+            expSum =
+              causeSkillPersonnelLevTab[value[0]] +
+              causeSkillPersonnelSaLvExpTab[value[1]];
+            console.log(
+              causeSkillPersonnelLevTab[value[0]] +
+                " " +
+                causeSkillPersonnelSaLvExpTab[value[1]]
+            );
+          }
+          break;
+        case "11":
+          // 算事业管理的视同指数
+          {
+            expSum =
+              causeManPersonnelLevTab[value[0]] +
+              causeManPersonnelSaLvExpTab[value[1]];
+            console.log(
+              causeManPersonnelLevTab[value[0]] +
+                " " +
+                causeManPersonnelSaLvExpTab[value[1]]
+            );
+          }
+          break;
+        case "12":
+          // 算事业工人的视同指数
+          {
+            expSum =
+              causeWorkmanLevTab[value[0]] + causeWorkmanSaLvExpTab[value[1]];
+            console.log(
+              causeWorkmanLevTab[value[0]] +
+                " " +
+                causeWorkmanSaLvExpTab[value[1]]
+            );
+          }
+          break;
+        case "2":
+          // 算企业的视同指数
+          {
+            expSum = 1;
+          }
+          break;
+      }
+    };
+
+    // 退休缴费指数的点击事件
+    let retireSubsidyExpHandleChange = (value) => {
+      // retireSubsidyStad.value = retireExpTab[value];
+      form.asTollexp = expSum + value;
+      console.log(value);
     };
 
     //删除crad
     let delSubReviseTollMonth = (index, value) => {
-      jobAvgSalay[index - 1].month += value.month;
-      jobAvgSalay[index - 1].monthMax = jobAvgSalay[index - 1].month;
-      jobAvgSalay.splice(index, 1);
+      form.jobAvgSalay[index - 1].month += value.month;
+      form.jobAvgSalay[index - 1].monthMax = form.jobAvgSalay[index - 1].month;
+      form.jobAvgSalay.splice(index, 1);
     };
 
     //清除数据
@@ -1001,7 +1245,10 @@ export default {
       form.asTollMonth = 0;
       form.actualToll = null;
       form.archivesDate = "";
-      jobAvgSalay.length = 0;
+      form.jobAvgSalay = [];
+      form.avgTollexp = 0;
+      form.actualTollexp = 0;
+      form.asTollexp = 0;
     };
 
     return {
@@ -1009,7 +1256,6 @@ export default {
       delSubReviseTollMonth,
       focusEvent,
       reviseTollMonth,
-      jobAvgSalay,
       clearData,
       selectArchivesDat,
       workTimeSum,
@@ -1031,14 +1277,10 @@ export default {
       agencyWorkerSkillLevelTabOpt,
       agencyOrdinarySkillLevelTabOpt,
       causeWorkmanLevAndSalSc,
-      // retireExpTab,
-      // skillSaLvExpTab,
-      // causeSkillPersonnelSaLvExpTab,
-      // causeManPersonnelSaLvExpTab,
-      // agencySkillWorkerTab,
-      // cicvlPostExpTab,
-      // cicvlServantExpTab,
-      // agencyWorkerSkillLevelTab,
+      retireSubsidyExpOpt,
+      retireSubsidyExp,
+      retireSubsidyExpHandleChange,
+      retireSubsidyStad,
     };
   },
 };

@@ -20,9 +20,6 @@
               <span>省岗平均工资管理</span>
             </el-menu-item>
           </router-link>
-          <el-menu-item index="3">
-            <span>Navigator Four</span>
-          </el-menu-item>
         </el-menu>
       </el-aside>
       <el-container>

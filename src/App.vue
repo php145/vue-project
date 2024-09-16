@@ -1,4 +1,6 @@
 <script setup>
+import { openDB } from "./storage/IndexedDB.js";
+
 openDB("pension", "1").then((db) => {
   db.close();
 });

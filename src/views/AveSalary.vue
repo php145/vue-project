@@ -11,9 +11,8 @@
 </template>
 <style></style>
 <script lang="ts">
-import IndexedDB from "../storage/IndexedDB.js";
+import { openDB, addData } from "../storage/IndexedDB.js";
 import { ref, reactive } from "vue";
-import Localforage from "localforage";
 
 export default {
   setup() {
@@ -125,12 +124,12 @@ export default {
       },
       {
         year: 2017,
-        averageSalary: 4491,
+        averageSalary: 5013,
         month: 12,
       },
       {
         year: 2018,
-        averageSalary: 4491,
+        averageSalary: 5500,
         month: 12,
       },
       {
