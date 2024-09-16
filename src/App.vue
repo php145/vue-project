@@ -1,8 +1,4 @@
-<script setup>
-openDB("pension", "1").then((db) => {
-  db.close();
-});
-</script>
+<script setup></script>
 
 <template>
   <RouterView />

@@ -12,8 +12,8 @@
 <style></style>
 <script lang="ts">
 import IndexedDB from "../storage/IndexedDB.js";
+
 import { ref, reactive } from "vue";
-import Localforage from "localforage";
 
 export default {
   setup() {
