@@ -420,7 +420,7 @@ export default {
       for (let i in values) {
         person_type_select_value_sum.value += values[i];
       }
-      console.log(person_type_select_value_sum.value);
+      console.log("人员类型选择器：" + person_type_select_value_sum.value);
     };
 
     //级联选择器
@@ -943,7 +943,7 @@ export default {
         console.log(month);
       }
     };
-    let averageSalaryList = [];
+
     //岗平均工资
     let selectArchivesDat = () => {
       if (
@@ -960,88 +960,86 @@ export default {
 
         // 实际缴费时间
         form.actualToll = workTimeSum.value - form.asTollMonth;
-        if (averageSalaryList == null || averageSalaryList.length == 0) {
-          openDB("pension", "1").then((db) => {
-            form.jobAvgSalay = [];
-            cursorGetData(db, "averageSalary", function (cursor) {
-              if (cursor) {
-                // 必须要检查
-                // while (
+        let averageSalaryList = [];
+        // if (averageSalaryList == null || averageSalaryList.length == 0) {
+        openDB("pension", "1").then((db) => {
+          form.jobAvgSalay = [];
+          cursorGetData(db, "averageSalary", function (cursor) {
+            if (cursor) {
+              // 必须要检查
+              // while (
 
-                if (
-                  cursor.value.year >
-                    form.archivesDate.getFullYear().toString() +
-                      form.archivesDate
-                        .getMonth()
-                        .toString()
-                        .padStart(2, "0") &&
-                  cursor.value.year <=
-                    form.workTime[1].getFullYear().toString() +
-                      (form.workTime[1].getMonth() + 1)
-                        .toString()
-                        .padStart(2, "0")
-                ) {
-                  console.log(111);
-                  cursor.continue(); // 遍历了存储对象中的所有内容
-                  averageSalaryList.push(cursor.value);
-                } else {
-                  cursor.continue();
-                }
+              if (
+                cursor.value.year >
+                  form.archivesDate.getFullYear().toString() +
+                    form.archivesDate.getMonth().toString().padStart(2, "0") &&
+                cursor.value.year <=
+                  form.workTime[1].getFullYear().toString() +
+                    (form.workTime[1].getMonth() + 1)
+                      .toString()
+                      .padStart(2, "0")
+              ) {
+                console.log(111);
+                cursor.continue(); // 遍历了存储对象中的所有内容
+                averageSalaryList.push(cursor.value);
               } else {
-                // console.log("游标读取的数据：", averageSalaryList);
-                // 一维数组变成二维数组
-                let subItem = [];
-                let i = 0;
-                for (; i < averageSalaryList.length - 1; i++) {
-                  if (
-                    averageSalaryList[i].year.slice(0, 4) ==
-                      averageSalaryList[i + 1].year.slice(0, 4) &&
-                    averageSalaryList[i].averageSalary ==
-                      averageSalaryList[i + 1].averageSalary
-                  ) {
-                    subItem.push(averageSalaryList[i]);
-                  } else {
-                    subItem.push(averageSalaryList[i]);
-                    form.jobAvgSalay.push({
-                      year: subItem[0].year.slice(0, 4),
-                      subList: subItem,
-                      subItem: 0,
-                      monthAveSal: null,
-                      monthMin: 1,
-                      monthMax: subItem.length,
-                      averageSalary: subItem[0].averageSalary,
-                      month: subItem.length,
-                    });
-                    subItem = [];
-                  }
-                }
-                subItem.push(averageSalaryList[i]);
-                form.jobAvgSalay.push({
-                  year: subItem[0].year.slice(0, 4),
-                  subList: subItem,
-                  subItem: 0,
-                  monthAveSal: null,
-                  monthMin: 1,
-                  monthMax: subItem.length,
-                  averageSalary: subItem[0].averageSalary,
-                  month: subItem.length,
-                });
-                subItem = [];
-                if (person_type_select_value.value == "2") {
-                  for (let i = 0; i < form.jobAvgSalay.length; i++) {
-                    if (
-                      form.jobAvgSalay[i].year == 2017 ||
-                      form.jobAvgSalay[i].year == 2018
-                    ) {
-                      form.jobAvgSalay[i].averageSalary = 4491;
-                    }
-                  }
-                }
-                // console.log("tolList", form.jobAvgSalay);
+                cursor.continue();
               }
-            });
+            } else {
+              // console.log("游标读取的数据：", averageSalaryList);
+              // 一维数组变成二维数组
+              let subItem = [];
+              let i = 0;
+              for (; i < averageSalaryList.length - 1; i++) {
+                if (
+                  averageSalaryList[i].year.slice(0, 4) ==
+                    averageSalaryList[i + 1].year.slice(0, 4) &&
+                  averageSalaryList[i].averageSalary ==
+                    averageSalaryList[i + 1].averageSalary
+                ) {
+                  subItem.push(averageSalaryList[i]);
+                } else {
+                  subItem.push(averageSalaryList[i]);
+                  form.jobAvgSalay.push({
+                    year: subItem[0].year.slice(0, 4),
+                    subList: subItem,
+                    subItem: 0,
+                    monthAveSal: null,
+                    monthMin: 1,
+                    monthMax: subItem.length,
+                    averageSalary: subItem[0].averageSalary,
+                    month: subItem.length,
+                  });
+                  subItem = [];
+                }
+              }
+              subItem.push(averageSalaryList[i]);
+              form.jobAvgSalay.push({
+                year: subItem[0].year.slice(0, 4),
+                subList: subItem,
+                subItem: 0,
+                monthAveSal: null,
+                monthMin: 1,
+                monthMax: subItem.length,
+                averageSalary: subItem[0].averageSalary,
+                month: subItem.length,
+              });
+              subItem = [];
+              if (person_type_select_value.value == "2") {
+                for (let i = 0; i < form.jobAvgSalay.length; i++) {
+                  if (
+                    form.jobAvgSalay[i].year == 2017 ||
+                    form.jobAvgSalay[i].year == 2018
+                  ) {
+                    form.jobAvgSalay[i].averageSalary = 4491;
+                  }
+                }
+              }
+              // console.log("tolList", form.jobAvgSalay);
+            }
           });
-        }
+        });
+        // }
       }
     };
 
